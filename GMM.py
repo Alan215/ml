@@ -35,7 +35,10 @@ def GMM(K, data, stop_times):
         #M step
         mul = z.T.dot(data),0/np.sum(z,axis=0)
         for j in range(K):
-            cov(j) =
+            tmp = np.zeros((dim,dim))
+            for i in range(num):
+                tmp += z[i,j]*np.outer(data[i],data[i])
+            cov[j] = tmp/np.sum(z[:,j])
         times += 1
 
 
