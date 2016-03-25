@@ -1,2 +1,2 @@
-Git is a version.
+Git is a version control.
 Git is a free.
