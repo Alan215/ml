@@ -140,6 +140,7 @@ import pandas as pd
 
 #super parameter
 def kmeans(K, data, stop_times):
+    clusters = []
 
     num = data.shape[0]
     dim = data.shape[1]
@@ -173,10 +174,7 @@ def kmeans(K, data, stop_times):
             r[i, a!=max_index] = 0
         mul = data.T.dot(r).T/np.stack([np.sum(r,0),np.sum(r,0)]).T
         times += 1
-    return mul
+    for i in range(K):
+        clusters.append(data[r[:,i]==1])
 
-
-
-
-
-
+    return clusters
