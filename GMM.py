@@ -16,39 +16,46 @@ def GMM(K, data, stop_times):
     mul = np.zeros((K, dim))
     cov = np.zeros((K, dim, dim))
     for i in range(K):
-        mul[i] = np.mean(clusters[i])
-        cov[i] = np.cov(clusters[i])
+        mul[i] = np.mean(clusters[i],axis=0)
+        cov[i] = np.cov(clusters[i].T)
+
     #latent variable
     z = np.zeros((num, K))
 
     times = 0
+    # print data[999]
     while(times<stop_times):
         #compute
         p = np.zeros((num, K))
         #E step
         for i in range(num):
-            nor = 0
             for j in range(K):
-                p[i,j] = np.exp(-1/2*(data[i]-mul[j]).dot(inv(cov[j])).dot((data[i]-mul[j]).T))*det(cov[j])**(-1/2)
+                p[i, j] = np.exp(-1/2*(data[i]-mul[j]).dot(inv(cov[j])).dot((data[i]-mul[j]).T))*det(cov[j])**(-1/2)
+                # print p[i,j]
+
             for j in range(K):
-                z[i,j] = p[i,j]/np.sum(p[i,:])
+                z[i,j] = p[i, j]/np.sum(p[i, :])
         #M step
-        mul = z.T.dot(data),0/np.sum(z,axis=0)
+        for j in range(K):
+            tmp = np.zeros((1,dim))
+            for i in range(num):
+                tmp += z[i,j]*data[i]
+            mul[j] = tmp/np.sum(z[:,j])
         for j in range(K):
             tmp = np.zeros((dim,dim))
             for i in range(num):
-                tmp += z[i,j]*np.outer(data[i],data[i])
+                tmp += z[i,j]*np.outer((data[i]-mul[j]),(data[i]-mul[j]))
             cov[j] = tmp/np.sum(z[:,j])
         times += 1
+        # print times
+    print mul, cov
 
-
-    z1 = np.diag(np.exp(-1/2*(data-mul1).dot(inv(cov1)).dot((data-mul1).T))/((2*np.pi)*det(cov1)**(1/2)))
-    z2 = np.diag(np.exp(-1/2*(data-mul2).dot(inv(cov2)).dot((data-mul2).T))/((2*np.pi)*det(cov2)**(1/2)))
-
+    out = []
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    ax.plot_trisurf(data[:,0], data[:,1], z1, color='blue')
-    ax.plot_trisurf(data[:,0], data[:,1], z2, color='red')
+    for i in range(K):
+        out.append(np.diag(np.exp(-1/2*(data-mul[i]).dot(inv(cov[i])).dot((data-mul[i]).T))/((2*np.pi)*det(cov[i])**(1/2))))
+        ax.plot_trisurf(data[:,0], data[:,1], out[i], color=np.random.rand(50))
     ax.set_xlabel('X')
     # ax.set_xlim(-40, 40)
     ax.set_ylabel('Y')
